@@ -1,0 +1,179 @@
+{
+  "name": "ReadUnsubscribedEmailsFromS3AndUpdateDB",
+  "nodes": [
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        -1200,
+        -16
+      ],
+      "id": "38180fe8-a6ab-400e-a913-b2354e5a4d1c",
+      "name": "When clicking ‘Execute workflow’"
+    },
+    {
+      "parameters": {
+        "bucketName": "sarvanlabs-unsubs-us-east-1",
+        "fileKey": "unsubs//unsubscribed_emails.json",
+        "binaryPropertyName": "=s3_data"
+      },
+      "type": "n8n-nodes-base.awsS3",
+      "typeVersion": 2,
+      "position": [
+        -960,
+        -16
+      ],
+      "id": "62192ece-0348-46cf-947f-92457437f69a",
+      "name": "Download a file",
+      "credentials": {
+        "aws": {
+          "id": "G00TSWzE19shDq7a",
+          "name": "AWS account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "fromJson",
+        "binaryPropertyName": "s3_data",
+        "destinationKey": "unsubscribed_emails",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.extractFromFile",
+      "typeVersion": 1,
+      "position": [
+        -736,
+        -16
+      ],
+      "id": "e19e0016-198f-48e9-87aa-0431ce452d3d",
+      "name": "Extract from File"
+    },
+    {
+      "parameters": {
+        "fieldToSplitOut": "unsubscribed_emails",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.splitOut",
+      "typeVersion": 1,
+      "position": [
+        -544,
+        -16
+      ],
+      "id": "b3db9ceb-fbd4-4da9-91fd-1aa65a7eb76f",
+      "name": "Split Out"
+    },
+    {
+      "parameters": {
+        "aggregate": "aggregateAllItemData",
+        "destinationFieldName": "emails",
+        "include": "specifiedFields",
+        "fieldsToInclude": "email, timestamp",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.aggregate",
+      "typeVersion": 1,
+      "position": [
+        -384,
+        -16
+      ],
+      "id": "ba7cd502-5e8a-4c59-8b55-5456a135783e",
+      "name": "Aggregate"
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "select * from company_master_new cmn LIMIT 10;",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.mySql",
+      "typeVersion": 2.5,
+      "position": [
+        -176,
+        -16
+      ],
+      "id": "02158689-6edf-46dd-ab3a-18c3f60d7f78",
+      "name": "Execute a SQL query",
+      "credentials": {
+        "mySql": {
+          "id": "ZKF1kXsBSP67keTb",
+          "name": "MySQL account"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "When clicking ‘Execute workflow’": {
+      "main": [
+        [
+          {
+            "node": "Download a file",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Download a file": {
+      "main": [
+        [
+          {
+            "node": "Extract from File",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Extract from File": {
+      "main": [
+        [
+          {
+            "node": "Split Out",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Split Out": {
+      "main": [
+        [
+          {
+            "node": "Aggregate",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Aggregate": {
+      "main": [
+        [
+          {
+            "node": "Execute a SQL query",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "saveExecutionProgress": true,
+    "saveManualExecutions": true,
+    "callerPolicy": "workflowsFromSameOwner",
+    "availableInMCP": false,
+    "errorWorkflow": "6FwgCdtbW460vTL1"
+  },
+  "versionId": "807b779d-94f8-4842-b415-23e248670f7c",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "6959bb55512ea6fa8f6ea7b31ee4f4713f4f3fcf83148003dac62fc89f615d67"
+  },
+  "id": "6FwgCdtbW460vTL1",
+  "tags": []
+}
