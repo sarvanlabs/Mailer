@@ -22,8 +22,8 @@ import utils
 import json, time, hmac, hashlib, base64, secrets
 
 
-SENDER = "stuti@mail.sarvanlabs.com"
-SENDERNAME = "Stuti Sharma"
+SENDER = "sarvanlabs@mail.sarvanlabs.com"
+SENDERNAME = "Sarvan Labs"
 REPLYTO = "contact@sarvanlabs.com"
 
 MAX_RATE = 14           # emails per second
@@ -189,18 +189,21 @@ def fetch_emails(start_date, end_date, engine=None):
     """
     Pull companies with incorporation date in [start_date, end_date).
     """
-    condition = f"""cmn.Class_of_Company = 'Private' 
-    and cmn.Whether_Listed_or_not = 'Unlisted'
-    and cmn.Paid_up_Capital_Rs < 2000000
-    and cmn.is_unsubscribed = 0
-    and cmn.Date_of_Incorporation >= '{start_date}' AND cmn.Date_of_Incorporation < '{end_date}';"""
-    DB_QUERY_FETCH_EMAILS = f"""SELECT cmn.Company_Name, 
-    cmn.Email_Id, 
-    cmn.is_unsubscribed
-    from company_master_new cmn where {condition}"""
-    print("DB_QUERY_FETCH_EMAILS ::: ",DB_QUERY_FETCH_EMAILS)
-    return pd.read_sql(DB_QUERY_FETCH_EMAILS, con=engine)
-
+    try:
+        condition = f"""cmn.Class_of_Company = 'Private' 
+        and cmn.Whether_Listed_or_not = 'Unlisted'
+        and cmn.Paid_up_Capital_Rs < 2000000
+        and cmn.is_unsubscribed = 0
+        and cmn.Date_of_Incorporation >= '{start_date}' AND cmn.Date_of_Incorporation < '{end_date}';"""
+        DB_QUERY_FETCH_EMAILS = f"""SELECT cmn.Company_Name, 
+        cmn.Email_Id, 
+        cmn.is_unsubscribed
+        from company_master_new cmn where {condition}"""
+        print("DB_QUERY_FETCH_EMAILS ::: ",DB_QUERY_FETCH_EMAILS)
+        return pd.read_sql(DB_QUERY_FETCH_EMAILS, con=engine)
+    except Exception as e:
+        print(f"Error fetching emails: {e}")
+        
 
 def is_valid_email(addr: str) -> bool:
     return bool(addr) and EMAIL_REGEX.match(addr) is not None
@@ -300,13 +303,13 @@ def render_html(recipient_name, company_name, unsub_url):
       </ul>
 
       <p>If your team is spending time on repetitive steps or copy-paste work, we can help automate those processes so you save cost and deliver faster—without disrupting how your people already work.</p>
-
       <p style="margin: 18px 0;">
-        <a class="btn" href="mailto:contact@sarvanlabs.com?subject=Automation%20opportunity%20at%20{company_name}" target="_blank" rel="noopener">Reply via Email</a>
+        <a class="btn" href="https://wa.me/{918218842490}?text=Hi%20Sarvan%20Labs,%20I%27d%20like%20to%20learn%20how%20you%20can%20help%20us%20automate%20our%20workflows.%20From%20{company_name}" target="_blank" rel="noopener">Contact Us (WhatsApp)</a>
+        &nbsp;&nbsp;
+        <a class="btn" href="mailto:contact@sarvanlabs.com?subject=Lets Connect | SarvanLabs | {company_name}" target="_blank" rel="noopener">Reply via Email</a>
         &nbsp;&nbsp;
         <a class="btn" href="https://www.sarvanlabs.com" target="_blank" rel="noopener">Visit sarvanlabs.com</a>
       </p>
-
       <hr>
       <p class="muted">
         Sarvan Labs — AI Automation, Security, DevOps &amp; Engineering Enablement<br>
@@ -365,9 +368,10 @@ def main(startdate, enddate):
     print("Starting run")
     conn = get_connection()
 
-    df_emails = df = pd.DataFrame(
-    [{"Company_Name": "ABC Limited", "Email_Id": "sarthakvashisth@outlook.com"}],
-    columns=["Company_Name", "Email_Id"]) #fetch_emails("2023-01-01","2023-01-05",engine=conn)
+    # df_emails = df = pd.DataFrame(
+    # [{"Company_Name": "abc", "Email_Id": "abc@outlook.com"}],
+    # columns=["Company_Name", "Email_Id"]) 
+    df_emails = fetch_emails(startdate,enddate,engine=conn)
     print(df_emails)
     limiter = RateLimiter(MAX_RATE)
 
@@ -401,5 +405,5 @@ def main(startdate, enddate):
 
 if __name__ == "__main__":
     # Example usage
-    main("2023-01-01", "2023-02-01")
+    main("2023-01-01", "2023-01-03")
     # dnd("U12345PTC2023PLC000001")  # Example CIN to set DND
