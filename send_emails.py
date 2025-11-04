@@ -33,7 +33,7 @@ BASE_BACKOFF = 0.5      # seconds (capped below)
 EMAIL_REGEX = re.compile(r"^[^@\s]+@[^@\s]+\.[^@\s]+$")
 
 WORDS_BLOCKLIST_IN_ADDRESS = set([
-    "ca","fca","cs","mca","legal","roc","fcs","adv","consult","secret","company","ramit"
+    "ca","fca","cs","mca","legal","roc","fcs","adv"
 ])
 
 # --------------------
@@ -194,7 +194,8 @@ def fetch_emails(start_date, end_date, engine=None):
         and cmn.Whether_Listed_or_not = 'Unlisted'
         and cmn.Paid_up_Capital_Rs < 2000000
         and cmn.is_unsubscribed = 0
-        and cmn.Date_of_Incorporation >= '{start_date}' AND cmn.Date_of_Incorporation < '{end_date}';"""
+        and cmn.Date_of_Incorporation >= '{start_date}' AND cmn.Date_of_Incorporation < '{end_date}'
+        and cmn.Company_Name not like '%technology%';"""
         DB_QUERY_FETCH_EMAILS = f"""SELECT cmn.Company_Name, 
         cmn.Email_Id, 
         cmn.is_unsubscribed
@@ -404,6 +405,4 @@ def main(startdate, enddate):
 
 
 if __name__ == "__main__":
-    # Example usage
-    main("2023-01-01", "2023-01-03")
-    # dnd("U12345PTC2023PLC000001")  # Example CIN to set DND
+    main("2023-01-08", "2023-01-15")
