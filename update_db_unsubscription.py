@@ -2,9 +2,27 @@ import boto3
 import json
 import utils
 from botocore.exceptions import ClientError
+import pymysql
 
 BUCKET = "sarvanlabs-unsubs-us-east-1"
 PREFIX = "unsubs/"
+
+def return_connection():
+    sm = utils.SecretCache(region="us-east-1")
+    db_creds = sm.get("MySQL_local")
+    DB_HOST = db_creds.get("host")
+    DB_USER = db_creds.get("user")
+    DB_PASSWORD = db_creds.get("password")
+    DB_DATABASE_NAME = db_creds.get("database")
+    print("Establishing database connection...")
+    print(f"DB Host: {DB_HOST}, DB User: {DB_USER}, DB Name: {DB_DATABASE_NAME}")
+    connection = pymysql.connect(
+        host=DB_HOST,
+        user=DB_USER,
+        password=DB_PASSWORD,
+        database=DB_DATABASE_NAME
+    )
+    return connection
 
 def get_text_file(bucket: str, key: str, encoding="utf-8") -> str | None:
     try:
@@ -26,11 +44,37 @@ def get_text_file(bucket: str, key: str, encoding="utf-8") -> str | None:
 def main():
     OBJECT_KEY = f"{PREFIX}/unsubscribed_emails.json"
     data = get_text_file(BUCKET, OBJECT_KEY)
-    # QUERY = f"SELECT * FROM company_master_new WHERE Email_Id in ({emails});"
-    arr = []
+    arr_email = []
+    arr_unsubscribed_at = []
     for d in data:
-        arr.append(d['email'])
-    print(json.stringify(arr))
+        arr_email.append(d['email'])
+    in_clause = "(" + ",".join(f"'{e}'" for e in arr_email) + ")"
+    for d in data:
+        arr_unsubscribed_at.append(d['timestamp'])
+    unsubscribed_at = "(" + ",".join(f"'{e}'" for e in arr_unsubscribed_at) + ")"
+    print("IN clause for SQL query:", in_clause)
+    # QUERY = f"SELECT * FROM company_master_new WHERE Email_Id in {in_clause};"
+    QUERY = f""" UPDATE company_master_new
+            SET is_unsubscribed = 1
+            unsubscribed_at = {unsubscribed_at}
+            WHERE Email_Id IN {in_clause};
+            """
+    print("SQL Query to fetch unsubscribed emails:")
+    print(QUERY)
+    exit()
+    try:
+        conn = return_connection()
+        with conn.cursor() as cursor:
+            rows_affected = cursor.execute(QUERY)
+            conn.commit()
+            print(f"Query executed successfully! {rows_affected} rows were updated.")
+    except pymysql.Error as e:
+        print(f"Error executing query: {str(e)}")
+        if conn:
+            conn.rollback()
+    finally:
+        if conn:
+            conn.close()
 
 
 if __name__ == "__main__":

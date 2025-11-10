@@ -1,4 +1,5 @@
 import os
+import random
 import re
 import ssl
 import smtplib
@@ -209,7 +210,7 @@ def fetch_emails(start_date, end_date, engine=None):
 def is_valid_email(addr: str) -> bool:
     return bool(addr) and EMAIL_REGEX.match(addr) is not None
 
-def build_message(to_email: str, subject: str, html_body: str) -> MIMEMultipart:
+def build_message(to_email: str, subject: str, body: str) -> MIMEMultipart:
     msg = MIMEMultipart('alternative')
     msg['From'] = email.utils.formataddr((SENDERNAME, SENDER))
     msg['To'] = to_email
@@ -220,8 +221,8 @@ def build_message(to_email: str, subject: str, html_body: str) -> MIMEMultipart:
     msg.add_header('X-SES-CONFIGURATION-SET', "noreply")
     msg.add_header('X-SES-MESSAGE-TAGS', "noreply=null")
     msg['List-Unsubscribe'] = f"<mailto:{SENDER}?subject=Unsubscribe>"
-    msg.attach(MIMEText(html_body, "plain", "utf-8"))
-    msg.attach(MIMEText(html_body, "html", "utf-8"))
+    # msg.attach(MIMEText(body, "plain", "utf-8"))
+    msg.attach(MIMEText(body, "html", "utf-8"))
     return msg
 
 
@@ -246,6 +247,75 @@ def get_connection():
 # --------------------
 # Email HTML
 # --------------------
+
+def render_text(recipient_name, company_name, unsub_url):
+    return f"""\
+    Hi {recipient_name},
+
+    I’m reaching out from Sarvan Labs, where we help businesses achieve more with AI-powered automation.
+
+    Our solutions are designed to reduce operational costs, improve productivity, and accelerate outcomes — enabling teams to focus on what truly drives growth.
+
+    By integrating AI into your existing processes, organizations often see:
+
+        1. Up to 50% cost reduction
+
+        2. Significant time savings
+
+        3. Smarter decision-making through AI insights
+
+If your team is spending time on repetitive steps, we can help automate those processes so you save cost and deliver faster—without disrupting how your people already work. 
+
+You can reach us via Whatsapp on +91-8218842490 or simply reply to this email or visit us at https://www.sarvanlabs.com to learn more.
+
+Best Regards,
+Sarvan Labs
+
+To Unsubscribe: {unsub_url}"""
+
+def render_html_simple(recipient_name, company_name, unsub_url):
+    return f"""\
+<!doctype html>
+<html>
+<body style="margin:0;padding:14px;font-family: system-ui, -apple-system, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; color:#111; font-size:14px; line-height:1.45;">
+    <div style="max-width:700px;white-space:pre-wrap;">
+        <p>Hi {recipient_name},</p>
+
+        <p>I’m reaching out from Sarvan Labs, where we help businesses achieve more with AI-powered automation.</p>
+
+        <p>Our solutions are designed to reduce operational costs, improve productivity, and accelerate outcomes — enabling teams to focus on what truly drives growth.</p
+
+        <p>By integrating AI into your existing processes, organizations often see:</p>
+        <ol>
+            <li>Up to 50% cost reduction</li>
+
+            <li>Significant time savings</li>
+            
+            <li>Smarter decision-making through AI insights</li>
+        </ol>
+        <p>If your team is spending time on repetitive steps, we can help automate those processes so you save cost and deliver faster—without disrupting how your people already work.</p>
+
+        <div class="cta">
+            <p>
+            You can reach us via WhatsApp at <a class="textlink" href="https://wa.me/918218842490">+91-8218842490</a>, simply reply to this email, or visit us at
+            <a class="textlink" href="https://www.sarvanlabs.com">sarvanlabs.com</a> to learn more.
+            </p>
+        </div>
+
+        <p class="footer">
+            Best Regards,<br/>
+        <strong>Sarvan Labs</strong>
+        </p>
+
+        <hr/>
+
+To Unsubscribe: <a href="{unsub_url}" style="color:#0a66c2;text-decoration:underline;">Unsubscribe</a>
+    </div>
+</body>
+</html>
+"""
+
+
 def render_html(recipient_name, company_name, unsub_url):
     return f"""\
 <!DOCTYPE html>
@@ -342,18 +412,28 @@ def send_email_to_company(row, smtp: "ReconnectingSMTP", limiter, blocked_emails
     
     sm = utils.SecretCache(region="us-east-1")
     hmac_secret = sm.get("HMAC_SECRET").get("hmac")
-    print("HMAC:::::", hmac_secret)
-    print("emailid:::::", email_in_lower)
     token = make_token(
                 email_in_lower, hmac_secret,
                 email_type="bulk_campaign",
                 campaign_month="oct_2025",
             )
     link = f"https://unsubscribe.sarvanlabs.com/unsubscribe?e={token}"
-    print(f"link:::", link)
 
-    subject = f"Ship faster. Spend less. With AI."
-    body = render_html(row.get("Company_Name", ""), row.get("Company_Name", ""),link)
+    subjects = [
+        "Cut Costs and Boost Productivity — The Smarter Way",
+        "AI That Works for You — Save Time, Reduce Costs",
+        "Work Smarter, Not Harder: Automate with AI",
+        "Your Next Competitive Edge: AI Automation",
+        "Achieve More in Less Time with AI-Powered Automation",
+        "Unlock Growth Through Smart AI Automation",
+        "Discover How AI Can Supercharge Your Business Efficiency",
+        "Transform Your Business Efficiency with AI Automation",
+        "Faster Operations, Lower Costs — Powered by AI",
+        "See What AI Automation Can Do for Your Business",
+    ]
+    subject = random.choice(subjects)
+    # body = render_html(row.get("Company_Name", ""), row.get("Company_Name", ""),link)
+    body = render_html_simple(row.get("Company_Name", ""), row.get("Company_Name", ""),link)
     msg = build_message(emailid, subject, body)
 
     limiter.wait()  # pace to 14/sec
@@ -369,10 +449,10 @@ def main(startdate, enddate):
     print("Starting run")
     conn = get_connection()
 
-    # df_emails = df = pd.DataFrame(
-    # [{"Company_Name": "abc", "Email_Id": "abc@outlook.com"}],
-    # columns=["Company_Name", "Email_Id"]) 
-    df_emails = fetch_emails(startdate,enddate,engine=conn)
+    df_emails = df = pd.DataFrame(
+    [{"Company_Name": "abc", "Email_Id": "sarthakvashisth@outlook.com"}],
+    columns=["Company_Name", "Email_Id"]) 
+    # df_emails = fetch_emails(startdate,enddate,engine=conn)
     print(df_emails)
     limiter = RateLimiter(MAX_RATE)
 
@@ -387,7 +467,6 @@ def main(startdate, enddate):
     print(f"SMTP Host: {HOST}, Port: {PORT}, Username: {USERNAME_SMTP}")
     with ReconnectingSMTP(HOST, PORT, USERNAME_SMTP, PASSWORD_SMTP) as smtp:
         for _, row in df_emails.iterrows():
-            print("email::", (row.get("Email_Id", "")))
             emailid = (row.get("Email_Id", "") or "").strip().lower()
             if not emailid or emailid in seen:
                 skipped += 1
@@ -405,4 +484,4 @@ def main(startdate, enddate):
 
 
 if __name__ == "__main__":
-    main("2023-01-08", "2023-01-15")
+    main("2023-01-15", "2023-01-20")
