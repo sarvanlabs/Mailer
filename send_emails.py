@@ -297,7 +297,7 @@ def render_html_simple(recipient_name, company_name, unsub_url):
 
         <div class="cta">
             <p>
-            You can reach us via WhatsApp at <a class="textlink" href="https://wa.me/918218842490">+91-8218842490</a>, simply reply to this email, or visit us at
+            You can reach us via WhatsApp at <a class="textlink" href="https://wa.me/918218842490">+91-8218842490</a> or simply reply to this email, or visit us at
             <a class="textlink" href="https://www.sarvanlabs.com">sarvanlabs.com</a> to learn more.
             </p>
         </div>
@@ -449,10 +449,10 @@ def main(startdate, enddate):
     print("Starting run")
     conn = get_connection()
 
-    df_emails = df = pd.DataFrame(
-    [{"Company_Name": "abc", "Email_Id": "sarthakvashisth@outlook.com"}],
-    columns=["Company_Name", "Email_Id"]) 
-    # df_emails = fetch_emails(startdate,enddate,engine=conn)
+    # df_emails = df = pd.DataFrame(
+    # [{"Company_Name": "abc", "Email_Id": "sarthakvashisth@outlook.com"}],
+    # columns=["Company_Name", "Email_Id"]) 
+    df_emails = fetch_emails(startdate,enddate,engine=conn)
     print(df_emails)
     limiter = RateLimiter(MAX_RATE)
 
@@ -484,4 +484,4 @@ def main(startdate, enddate):
 
 
 if __name__ == "__main__":
-    main("2023-01-15", "2023-01-20")
+    main("2023-03-01", "2023-03-15")

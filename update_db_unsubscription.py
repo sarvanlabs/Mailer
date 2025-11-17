@@ -49,19 +49,17 @@ def main():
     for d in data:
         arr_email.append(d['email'])
     in_clause = "(" + ",".join(f"'{e}'" for e in arr_email) + ")"
-    for d in data:
-        arr_unsubscribed_at.append(d['timestamp'])
-    unsubscribed_at = "(" + ",".join(f"'{e}'" for e in arr_unsubscribed_at) + ")"
-    print("IN clause for SQL query:", in_clause)
+    # for d in data:
+    #     arr_unsubscribed_at.append(d['timestamp'])
+    # unsubscribed_at = "(" + ",".join(f"'{e}'" for e in arr_unsubscribed_at) + ")"
+    # print("IN clause for SQL query:", in_clause)
     # QUERY = f"SELECT * FROM company_master_new WHERE Email_Id in {in_clause};"
-    QUERY = f""" UPDATE company_master_new
-            SET is_unsubscribed = 1
-            unsubscribed_at = {unsubscribed_at}
-            WHERE Email_Id IN {in_clause};
+    QUERY = f""" UPDATE company_master_new cmn
+            SET cmn.is_unsubscribed=1
+            WHERE cmn.Email_Id IN {in_clause};
             """
     print("SQL Query to fetch unsubscribed emails:")
     print(QUERY)
-    exit()
     try:
         conn = return_connection()
         with conn.cursor() as cursor:
