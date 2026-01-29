@@ -415,7 +415,7 @@ def send_email_to_company(row, smtp: "ReconnectingSMTP", limiter, blocked_emails
     token = make_token(
                 email_in_lower, hmac_secret,
                 email_type="bulk_campaign",
-                campaign_month="oct_2025",
+                campaign_month="dec_2025",
             )
     link = f"https://unsubscribe.sarvanlabs.com/unsubscribe?e={token}"
 
@@ -479,9 +479,10 @@ def main(startdate, enddate):
             else:
                 failed += 1
             seen.add(emailid)
+            print(f"Progress: Sent={sent}, Skipped={skipped}, Failed={failed}")
 
     print(f"Done. Sent={sent}, Skipped={skipped}, Failed={failed}")
 
 
 if __name__ == "__main__":
-    main("2023-03-01", "2023-03-15")
+    main("2024-02-01", "2024-02-29")
