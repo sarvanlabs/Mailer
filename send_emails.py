@@ -195,6 +195,8 @@ def fetch_emails(start_date, end_date, engine=None):
         and cmn.Whether_Listed_or_not = 'Unlisted'
         and cmn.Paid_up_Capital_Rs < 2000000
         and cmn.is_unsubscribed = 0
+        and cmn.Email_Id IS NOT NULL
+        and cmn.Email_Id != ''
         and cmn.Date_of_Incorporation >= '{start_date}' AND cmn.Date_of_Incorporation < '{end_date}'
         and cmn.Company_Name not like '%technology%';"""
         DB_QUERY_FETCH_EMAILS = f"""SELECT cmn.Company_Name, 
@@ -485,4 +487,4 @@ def main(startdate, enddate):
 
 
 if __name__ == "__main__":
-    main("2024-02-01", "2024-02-29")
+    main("2025-08-01", "2025-08-31")
