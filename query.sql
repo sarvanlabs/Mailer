@@ -24,3 +24,7 @@ SELECT count(*)
         
         
         select * from company_master_new cmn where cmn.Email_Id='vamsi@lpgroup.co.in'
+
+
+        mysql --version
+mysql  Ver 8.4.6 for Linux on x86_64 (MySQL Community Server - GPL)

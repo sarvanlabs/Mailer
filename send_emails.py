@@ -487,4 +487,4 @@ def main(startdate, enddate):
 
 
 if __name__ == "__main__":
-    main("2025-11-01", "2025-11-30")
+    main("2020-06-01", "2020-07-31")
