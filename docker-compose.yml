@@ -1,0 +1,15 @@
+services:
+  db:
+    image: mysql:8.4
+    container_name: mailer_db
+    restart: unless-stopped
+    environment:
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
+      MYSQL_DATABASE: ${MYSQL_DATABASE}
+    ports:
+    - "3307:3306"
+    volumes:
+    - /home/vsarthak/all_db_backup_22march2026.sql:/docker-entrypoint-initdb.d/init.sql:z
+    - mailer_db_data:/var/lib/mysql
+volumes:
+  mailer_db_data: null
