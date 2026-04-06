@@ -451,10 +451,10 @@ def main(startdate, enddate):
     print("Starting run")
     conn = get_connection()
 
-    # df_emails = df = pd.DataFrame(
-    # [{"Company_Name": "abc", "Email_Id": "sarthakvashisth@outlook.com"}],
-    # columns=["Company_Name", "Email_Id"]) 
-    df_emails = fetch_emails(startdate,enddate,engine=conn)
+    df_emails = df = pd.DataFrame(
+    [{"Company_Name": "abc", "Email_Id": "sarthakvashisth@outlook.com"}],
+    columns=["Company_Name", "Email_Id"]) 
+    # df_emails = fetch_emails(startdate,enddate,engine=conn)
     print(df_emails)
     limiter = RateLimiter(MAX_RATE)
 
